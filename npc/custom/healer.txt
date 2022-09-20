@@ -15,8 +15,24 @@
 
 -	script	Healer	-1,{
 
+	.spirit[Job_Alchemist] = 445;
+	.spirit[Job_Monk] = 447;
+	.spirit[Job_Star_Gladiator] = 448;
+	.spirit[Job_Sage] = 449;
+	.spirit[Job_Crusader] = 450;
+	.spirit[Job_SuperNovice] = 451;
+	.spirit[Job_Knight] = 452;
+	.spirit[Job_Wizard] = 453;
+	.spirit[Job_Priest] = 454;
+	.spirit[Job_Bard] = .spirit[Job_Dancer] = 455;
+	.spirit[Job_Rogue] = 456;
+	.spirit[Job_Assassin] = 457;
+	.spirit[Job_Blacksmith] = 458;
+	.spirit[Job_Hunter] = 460;
+	.spirit[Job_Soul_Linker] = 461;
+	
 	.@Price = 0;	// Zeny required for heal
-	.@Buffs = 0;	// Also buff players? (1: yes / 0: no)
+	.@Buffs = 1;	// Also buff players? (1: yes / 0: no)
 	.@Delay = 0;	// Heal delay, in seconds
 
 	if (@HD > gettimetick(2))
@@ -29,6 +45,91 @@
 			end;
 		Zeny -= .@Price;
 	}
+	
+	
+
+//	disable negative buffs
+	sc_end SC_STONE;
+	sc_end SC_FREEZE;
+	sc_end SC_STUN;
+	sc_end SC_SLEEP;
+	sc_end SC_POISON;
+	sc_end SC_CURSE;
+	sc_end SC_SILENCE;
+	sc_end SC_CONFUSION;
+	sc_end SC_BLIND;
+	sc_end SC_BLOODING;
+	sc_end SC_DPOISON;
+	sc_end SC_FEAR;
+	sc_end SC_COLD;
+	sc_end SC_BURNING;
+	sc_end SC_DEEP_SLEEP;
+	sc_end SC_DEC_AGI;
+	sc_end SC_BROKENARMOR;
+	sc_end SC_BROKENWEAPON;
+	sc_end SC_NOEQUIPWEAPON;
+	sc_end SC_NOEQUIPSHIELD;
+	sc_end SC_NOEQUIPARMOR;
+	sc_end SC_NOEQUIPHELM;
+	sc_end SC__STRIPACCESSARY;
+	sc_end SC_PROPERTYUNDEAD;
+	sc_end SC_ORCISH;
+	sc_end SC_BERSERK;
+	sc_end SC_SKE;
+	sc_end SC_SWOO;
+	sc_end SC_SKA;
+
+//	give players buff ... don't give too much otherwise player wanna spam
+	.@time = 300000; // the buff last 5 minutes
+	sc_start SC_INCREASEAGI, .@time, 10;
+	sc_start SC_BLESSING, .@time, 10;
+//	sc_start SC_CONCENTRATION, .@time, 10;
+//	sc_start SC_IMPOSITIO, .@time, 5;
+//	sc_start SC_SUFFRAGIUM, .@time, 3;
+//	sc_start SC_KYRIE, .@time, 10;
+//	sc_start SC_MAGNIFICAT, .@time, 5;
+//	sc_start SC_GLORIA, .@time, 5;
+//	sc_start SC_WINDWALK, .@time, 5;
+//	sc_start SC_ANGELUS, .@time, 10;
+
+//	give player's soul link
+	if ( .@spirit = .spirit[BaseJob] );
+	else if ( Upper & 1 && BaseLevel < 70 )
+		.@spirit = 494;
+	if ( .@spirit ) {
+		sc_start4 SC_SPIRIT, .@time, 5, .@spirit,0,0;
+		skilleffect .@spirit, 5;
+	}
+
+
+//	repair all player's broken eqiupments
+	repairall;
+
+//	identify all player's equipments
+	getinventorylist;
+	for( .@i = 0; .@i < @inventorylist_count; .@i++ ) {
+		if ( @inventorylist_identify[.@i] == 1 )
+			continue;
+		else if ( getskilllv(MC_IDENTIFY) == 1 && Sp >= 10 )
+			heal 0,0; // lol... this is supposed to reduce their SP by 10, whatever
+		else if ( countitem(Spectacles) )
+			delitem Spectacles,1;
+		else if ( getskilllv(RG_COMPULSION) && Zeny >= ( 100 - ( 5 + 4 * getskilllv(RG_COMPULSION) ) )* 2/5 )
+			Zeny -= ( 100 - ( 5 + 4 * getskilllv(RG_COMPULSION) ) )* 2/5;
+		else if ( getskilllv(MC_DISCOUNT) && Zeny >= ( 100 - ( 5 + 2 * getskilllv(MC_DISCOUNT) ) )* 2/5 )
+			Zeny -= ( 100 - ( 5 + 2 * getskilllv(MC_DISCOUNT) ) )* 2/5;
+		else if ( Zeny >= 40 )
+			Zeny -= 40;
+		else
+			break;
+		delitem2 @inventorylist_id[.@i],1,0,0,0,0,0,0,0;
+		getitem @inventorylist_id[.@i],1;
+		.@icount++;
+	}
+	if ( .@icount )
+		message strcharinfo(0), "Identified "+ .@icount +" Items.";
+
+
 	specialeffect2 EF_HEAL2;
 	percentheal 100,100;
 	if (.@Buffs) {
@@ -45,42 +146,42 @@
 
 // Duplicates
 //============================================================
-alberta,25,240,6	duplicate(Healer)	Healer#alb	909
-aldebaran,135,118,6	duplicate(Healer)	Healer#alde	909
-amatsu,200,79,4	duplicate(Healer)	Healer#ama	909
-ayothaya,207,169,6	duplicate(Healer)	Healer#ayo	909
-comodo,184,158,6	duplicate(Healer)	Healer#com	909
-einbech,57,36,6	duplicate(Healer)	Healer#einbe	909
-einbroch,57,202,6	duplicate(Healer)	Healer#einbr	909
-geffen,115,72,6	duplicate(Healer)	Healer#gef	909
-gonryun,156,122,6	duplicate(Healer)	Healer#gon	909
-hugel,89,150,6	duplicate(Healer)	Healer#hug	909
-izlude,121,150,6	duplicate(Healer)	Healer#izl	909	//Pre-RE: (125,118)
-jawaii,250,139,4	duplicate(Healer)	Healer#jaw	909
-lighthalzen,152,100,6	duplicate(Healer)	Healer#lhz	909
-louyang,226,103,4	duplicate(Healer)	Healer#lou	909
-manuk,272,144,6	duplicate(Healer)	Healer#man	909
-mid_camp,203,289,6	duplicate(Healer)	Healer#mid	909
-moc_ruins,72,164,4	duplicate(Healer)	Healer#moc	909
-morocc,153,97,6	duplicate(Healer)	Healer#mor	909
-moscovia,220,191,4	duplicate(Healer)	Healer#mos	909
-niflheim,212,182,5	duplicate(Healer)	Healer#nif	909
-payon,179,106,4	duplicate(Healer)	Healer#pay	909
-prontera,162,193,4	duplicate(Healer)	Healer#prt	909
-rachel,125,116,6	duplicate(Healer)	Healer#rac	909
-splendide,201,153,4	duplicate(Healer)	Healer#spl	909
-thor_camp,249,74,4	duplicate(Healer)	Healer#thor	909
-umbala,105,148,3	duplicate(Healer)	Healer#umb	909
-veins,217,121,4	duplicate(Healer)	Healer#ve	909
-xmas,143,136,4	duplicate(Healer)	Healer#xmas	909
-yuno,164,45,4	duplicate(Healer)	Healer#yuno	909
+alberta,25,240,6	duplicate(Healer)	Healer#alb	569
+aldebaran,135,118,6	duplicate(Healer)	Healer#alde	569
+amatsu,200,79,4	duplicate(Healer)	Healer#ama	569
+ayothaya,207,169,6	duplicate(Healer)	Healer#ayo	569
+comodo,184,158,6	duplicate(Healer)	Healer#com	569
+einbech,57,36,6	duplicate(Healer)	Healer#einbe	569
+einbroch,57,202,6	duplicate(Healer)	Healer#einbr	569
+geffen,115,72,6	duplicate(Healer)	Healer#gef	569
+gonryun,156,122,6	duplicate(Healer)	Healer#gon	569
+hugel,89,150,6	duplicate(Healer)	Healer#hug	569
+izlude,121,150,6	duplicate(Healer)	Healer#izl	569	//Pre-RE: (125,118)
+jawaii,250,139,4	duplicate(Healer)	Healer#jaw	569
+lighthalzen,152,100,6	duplicate(Healer)	Healer#lhz	569
+louyang,226,103,4	duplicate(Healer)	Healer#lou	569
+manuk,272,144,6	duplicate(Healer)	Healer#man	569
+mid_camp,203,289,6	duplicate(Healer)	Healer#mid	569
+moc_ruins,72,164,4	duplicate(Healer)	Healer#moc	569
+morocc,153,97,6	duplicate(Healer)	Healer#mor	569
+moscovia,220,191,4	duplicate(Healer)	Healer#mos	569
+niflheim,212,182,5	duplicate(Healer)	Healer#nif	569
+payon,179,106,4	duplicate(Healer)	Healer#pay	569
+prontera,162,193,4	duplicate(Healer)	Healer#prt	569
+rachel,125,116,6	duplicate(Healer)	Healer#rac	569
+splendide,201,153,4	duplicate(Healer)	Healer#spl	569
+thor_camp,249,74,4	duplicate(Healer)	Healer#thor	569
+umbala,105,148,3	duplicate(Healer)	Healer#umb	569
+veins,217,121,4	duplicate(Healer)	Healer#ve	569
+xmas,143,136,4	duplicate(Healer)	Healer#xmas	569
+yuno,164,45,4	duplicate(Healer)	Healer#yuno	569
 
 // Duplicates (Renewal)
 //============================================================
-brasilis,194,221,6	duplicate(Healer)	Healer#bra	909
-dewata,195,187,4	duplicate(Healer)	Healer#dew	909
-dicastes01,201,194,4	duplicate(Healer)	Healer#dic	909
-ecl_in01,45,60,4	duplicate(Healer)	Healer#ecl	909
-malangdo,132,114,6	duplicate(Healer)	Healer#mal	909
-malaya,227,204,6	duplicate(Healer)	Healer#ma	909
-mora,55,152,4	duplicate(Healer)	Healer#mora	909
+brasilis,194,221,6	duplicate(Healer)	Healer#bra	569
+dewata,195,187,4	duplicate(Healer)	Healer#dew	569
+dicastes01,201,194,4	duplicate(Healer)	Healer#dic	569
+ecl_in01,45,60,4	duplicate(Healer)	Healer#ecl	569
+malangdo,132,114,6	duplicate(Healer)	Healer#mal	569
+malaya,227,204,6	duplicate(Healer)	Healer#ma	569
+mora,55,152,4	duplicate(Healer)	Healer#mora	569

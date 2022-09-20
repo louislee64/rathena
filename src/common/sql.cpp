@@ -88,7 +88,9 @@ Sql* Sql_Malloc(void)
 	self->result = NULL;
 	self->keepalive = INVALID_TIMER;
 	my_bool reconnect = 1;
+	int sslmode = 1;
 	mysql_options(&self->handle, MYSQL_OPT_RECONNECT, &reconnect);
+	mysql_options(&self->handle, MYSQL_OPT_SSL_MODE, &sslmode);
 	return self;
 }
 
